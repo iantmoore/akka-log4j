@@ -20,8 +20,8 @@ import akka.actor.{ Actor, DiagnosticActorLogging, Props }
 import akka.event.Logging
 import akka.testkit.AkkaSpec
 import java.nio.file.{ Files, Path, Paths, StandardOpenOption }
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, ConfigMap }
-import scala.collection.JavaConverters._
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration.DurationInt
 
 object Log4jLoggerSpec {
@@ -102,8 +102,10 @@ class Log4jLoggerSpec
     }
 
     "put custom MDC values when specified" in {
-      producer ! ("Message with custom MDC values", Map("ticketNumber" -> 3671,
-                                                        "ticketDesc"   -> "Custom MDC Values"))
+      producer ! ("Message with custom MDC values", Map(
+        "ticketNumber" -> 3671,
+        "ticketDesc"   -> "Custom MDC Values"
+      ))
 
       awaitCond(outputString.contains("----"), 5.seconds)
       val s = outputString
@@ -116,8 +118,10 @@ class Log4jLoggerSpec
     }
 
     "Support null values in custom MDC" in {
-      producer ! ("Message with null custom MDC values", Map("ticketNumber" -> 3671,
-                                                             "ticketDesc"   -> null))
+      producer ! ("Message with null custom MDC values", Map(
+        "ticketNumber" -> 3671,
+        "ticketDesc"   -> null
+      ))
 
       awaitCond(outputString.contains("----"), 5.seconds)
       val s = outputString

@@ -20,16 +20,17 @@
 package akka.testkit
 
 import language.{ postfixOps, reflectiveCalls }
-
-import org.scalatest.{ BeforeAndAfterAll, WordSpecLike }
-import org.scalatest.Matchers
+import org.scalatest.{ BeforeAndAfterAll }
+import org.scalatest.matchers.should.Matchers
 import akka.actor.ActorSystem
 import akka.event.{ Logging, LoggingAdapter }
+
 import scala.concurrent.duration._
 import scala.concurrent.Future
 import com.typesafe.config.{ Config, ConfigFactory }
 import akka.dispatch.Dispatchers
 import akka.testkit.TestEvent._
+import org.scalatest.wordspec.AnyWordSpecLike
 
 object AkkaSpec {
   val testConf: Config =
@@ -52,7 +53,7 @@ object AkkaSpec {
                                                     """)
 
   def mapToConfig(map: Map[String, Any]): Config = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     ConfigFactory.parseMap(map.asJava)
   }
 
@@ -60,8 +61,8 @@ object AkkaSpec {
     val s = (Thread.currentThread.getStackTrace map (_.getClassName) drop 1)
       .dropWhile(_ matches "(java.lang.Thread|.*AkkaSpec.?$)")
     val reduced = s.lastIndexWhere(_ == clazz.getName) match {
-      case -1 ⇒ s
-      case z  ⇒ s drop (z + 1)
+      case -1 => s
+      case z  => s drop (z + 1)
     }
     reduced.head.replaceFirst(""".*\.""", "").replaceAll("[^a-zA-Z_0-9]", "_")
   }
@@ -70,7 +71,7 @@ object AkkaSpec {
 
 abstract class AkkaSpec(_system: ActorSystem)
     extends TestKit(_system)
-    with WordSpecLike
+    with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with WatchedByCoroner {
@@ -94,25 +95,25 @@ abstract class AkkaSpec(_system: ActorSystem)
 
   override val invokeBeforeAllAndAfterAllEvenIfNoTestsAreExpected = true
 
-  final override def beforeAll {
+  final override def beforeAll: Unit = {
     startCoroner
     atStartup()
   }
 
-  final override def afterAll {
+  final override def afterAll: Unit = {
     beforeTermination()
     shutdown()
     afterTermination()
     stopCoroner()
   }
 
-  protected def atStartup() {}
+  protected def atStartup(): Unit = {}
 
-  protected def beforeTermination() {}
+  protected def beforeTermination(): Unit = {}
 
-  protected def afterTermination() {}
+  protected def afterTermination(): Unit = {}
 
-  def spawn(dispatcherId: String = Dispatchers.DefaultDispatcherId)(body: ⇒ Unit): Unit =
+  def spawn(dispatcherId: String = Dispatchers.DefaultDispatcherId)(body: => Unit): Unit =
     Future(body)(system.dispatchers.lookup(dispatcherId))
 
   override def expectedTestDuration: FiniteDuration = 60 seconds

@@ -45,7 +45,7 @@ object Log4jLogger {
       LogManager.getLogger(logClass)
 
   @inline
-  private def withThreadContext(source: String, event: LogEvent)(statement: => Unit) {
+  private def withThreadContext(source: String, event: LogEvent)(statement: => Unit): Unit = {
     ThreadContext.put(MdcAkkaSource, source)
     ThreadContext.put(MdcThread, event.thread.getName)
     ThreadContext.put(MdcAkkaTimestamp, formatTimestamp(event.timestamp))
